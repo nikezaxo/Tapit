@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Freckle+Face&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: black;
+            color: white;
+            font-family: 'Freckle Face', cursive;
+        }
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        .score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            z-index: 10;
+            color: black;
+            text-shadow: 0 0 10px red, 0 0 20px orange, 0 0 30px yellow, 0 0 40px green, 0 0 50px blue, 0 0 60px indigo, 0 0 70px violet;
+        }
+        .claim {
+            position: absolute;
+            bottom: 70px; /* Adjusted to bring the image higher */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .claim img {
+            width: 75px; /* Reduced size */
+            height: auto;
+        }
+        .hidden {
+            display: none;
+        }
+        .counter {
+            font-size: 24px; /* Increased size */
+            text-align: center;
+            margin-top: 10px;
+            color: black;
+            text-shadow: 0 0 10px orange, 0 0 20px orange, 0 0 30px orange;
+        }
+        @keyframes glow {
+            0% { text-shadow: 0 0 10px red, 0 0 20px orange, 0 0 30px yellow, 0 0 40px green, 0 0 50px blue, 0 0 60px indigo, 0 0 70px violet; }
+            50% { text-shadow: 0 0 20px red, 0 0 40px orange, 0 0 60px yellow, 0 0 80px green, 0 0 100px blue, 0 0 120px indigo, 0 0 140px violet; }
+            100% { text-shadow: 0 0 10px red, 0 0 20px orange, 0 0 30px yellow, 0 0 40px green, 0 0 50px blue, 0 0 60px indigo, 0 0 70px violet; }
+        }
+    </style>
+</head>
+<body>
+    <video id="bgVideo" src="back.mp4" type="video/mp4" loop></video>
+    <div class="score" id="score">Score: 0</div>
+    <div class="claim" id="claim">
+        <img src="score.png" alt="Score" id="claimImage">
+        <div class="counter hidden" id="counter"></div>
+    </div>
+
+    <script>
+        let score = parseInt(localStorage.getItem('score')) || 0;
+        let lastTapTime = 0;
+        let claimButton = document.getElementById('claim');
+        let claimImage = document.getElementById('claimImage');
+        let counter = document.getElementById('counter');
+        let scoreDisplay = document.getElementById('score');
+        let bgVideo = document.getElementById('bgVideo');
+        let claimCooldown = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+        let glowIntensity = 10; // Initial glow intensity
+
+        // Update score display with saved score
+        scoreDisplay.textContent = `Score: ${score}`;
+
+        document.body.addEventListener('click', () => {
+            let currentTime = new Date().getTime();
+            if (currentTime - lastTapTime > 1000) {
+                bgVideo.currentTime = 0;
+                bgVideo.play();
+            }
+            lastTapTime = currentTime;
+            score++;
+            scoreDisplay.textContent = `Score: ${score}`;
+            localStorage.setItem('score', score); // Save score to localStorage
+
+            // Increase glow intensity with each tap
+            glowIntensity += 10;
+            scoreDisplay.style.textShadow = `0 0 ${glowIntensity}px red, 0 0 ${glowIntensity * 2}px orange, 0 0 ${glowIntensity * 3}px yellow, 0 0 ${glowIntensity * 4}px green, 0 0 ${glowIntensity * 5}px blue, 0 0 ${glowIntensity * 6}px indigo, 0 0 ${glowIntensity * 7}px violet`;
+            setTimeout(() => {
+                scoreDisplay.style.textShadow = '0 0 10px red, 0 0 20px orange, 0 0 30px yellow, 0 0 40px green, 0 0 50px blue, 0 0 60px indigo, 0 0 70px violet'; // Reset glow after animation
+                glowIntensity = 10;
+            }, 500); // Glow effect duration
+        });
+
+        setInterval(() => {
+            let currentTime = new Date().getTime();
+            if (currentTime - lastTapTime > 1000) {
+                bgVideo.pause();
+                bgVideo.currentTime = 0;
+            }
+        }, 100);
+
+        claimButton.addEventListener('click', () => {
+            if (!claimImage.classList.contains('hidden')) {
+                score += 100;
+                scoreDisplay.textContent = `Score: ${score}`;
+                localStorage.setItem('score', score); // Save updated score to localStorage
+                claimImage.classList.add('hidden');
+                counter.classList.remove('hidden');
+                let claimTime = new Date().getTime() + claimCooldown;
+
+                let countdownInterval = setInterval(() => {
+                    let remainingTime = claimTime - new Date().getTime();
+                    if (remainingTime <= 0) {
+                        clearInterval(countdownInterval);
+                        counter.classList.add('hidden');
+                        claimImage.classList.remove('hidden');
+                    } else {
+                        let hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
+                        let minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
+                        let seconds = Math.floor((remainingTime / 1000) % 60);
+                        counter.textContent = `${hours}h ${minutes}m ${seconds}s`;
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
