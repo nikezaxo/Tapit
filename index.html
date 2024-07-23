@@ -62,6 +62,18 @@
             color: black;
             text-shadow: 0 0 10px orange, 0 0 20px orange, 0 0 30px orange;
         }
+        .gif-container {
+            position: absolute;
+            bottom: 30px; /* Positioned below the counter */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 11;
+            display: none; /* Initially hidden */
+        }
+        .gif-container img {
+            width: 75px; /* Adjust size as needed */
+            height: auto;
+        }
         @keyframes glow {
             0% { text-shadow: 0 0 10px red, 0 0 20px orange, 0 0 30px yellow, 0 0 40px green, 0 0 50px blue, 0 0 60px indigo, 0 0 70px violet; }
             50% { text-shadow: 0 0 20px red, 0 0 40px orange, 0 0 60px yellow, 0 0 80px green, 0 0 100px blue, 0 0 120px indigo, 0 0 140px violet; }
@@ -76,6 +88,9 @@
         <img src="score.png" alt="Score" id="claimImage">
         <div class="counter hidden" id="counter"></div>
     </div>
+    <div class="gif-container" id="gifContainer">
+        <img src="new.gif" alt="New GIF">
+    </div>
 
     <script>
         let score = parseInt(localStorage.getItem('score')) || 0;
@@ -85,6 +100,7 @@
         let counter = document.getElementById('counter');
         let scoreDisplay = document.getElementById('score');
         let bgVideo = document.getElementById('bgVideo');
+        let gifContainer = document.getElementById('gifContainer');
         let claimCooldown = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
         let glowIntensity = 10; // Initial glow intensity
 
@@ -126,6 +142,12 @@
                 localStorage.setItem('score', score); // Save updated score to localStorage
                 claimImage.classList.add('hidden');
                 counter.classList.remove('hidden');
+                gifContainer.style.display = 'block'; // Show GIF
+
+                setTimeout(() => {
+                    gifContainer.style.display = 'none'; // Hide GIF after showing it once
+                }, 3000); // Adjust the display time as needed
+
                 let claimTime = new Date().getTime() + claimCooldown;
 
                 let countdownInterval = setInterval(() => {
